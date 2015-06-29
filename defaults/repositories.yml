@@ -1,0 +1,11 @@
+---
+# file: ansible-postgresql-el/defaults/main.yml
+
+pgsql_repositories_RedHat:
+  - version: "9.4"
+    url: http://yum.postgresql.org/9.4/redhat/rhel-7-x86_64/pgdg-redhat94-9.4-1.noarch.rpm
+
+pgsql_repositories_CentOS:
+  - version: "9.4"
+    url: http://yum.postgresql.org/9.4/redhat/rhel-7-x86_64/pgdg-centos94-9.4-1.noarch.rpm
+  

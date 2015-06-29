@@ -1,0 +1,17 @@
+---
+# file: ansible-postgresql-el/meta/main.yml
+
+galaxy_info:
+  author: Philip Lombardi
+  description: A role to install and manage PostgreSQL on RHEL and CentOS
+  license: MIT
+  min_ansible_version: 1.9
+  version: 1.0
+  platforms:
+    - name: EL
+      versions:
+      - 7
+  categories:
+   - 'database'
+   - 'database:sql'
+dependencies: []

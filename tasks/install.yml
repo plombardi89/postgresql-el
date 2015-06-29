@@ -1,0 +1,40 @@
+---
+# file: ansible-postgresql-el/tasks/install.yml 
+
+- name: Ensure PostgreSQL repository is installed
+  yum:
+    state: present
+    pkg: "{{ item.url }}"
+  when: item.version == "{{ pgsql_version }}"
+  with_items: pgsql_repositories_{{ ansible_distribution }}
+
+- name: Ensure PostgreSQL server packages are installed
+  yum:
+    state: latest
+    pkg: "{{ item }}"
+  with_items:
+    - postgresql{{ pgsql_version|replace('.', '') }}-server
+    - python-psycopg2
+    
+- name: Ensure PostgreSQL log directory is present
+  file:
+    mode: 0755
+    owner: "{{ pgsql_service_user }}"
+    group: "{{ pgsql_service_group }}"
+    path: "{{ pgsql_log_directory }}"
+    state: directory
+
+- name: Ensure PostgreSQL data directory is present
+  file:
+    mode: 0700
+    owner: "{{ pgsql_service_user }}"
+    group: "{{ pgsql_service_group }}"
+    path: "{{ pgsql_data_directory }}"
+    state: directory
+
+- name: Ensure PostgreSQL contrib package is installed
+  yum:
+    state: latest
+    pkg: postgresql{{ pgsql_version|replace('.', '') }}-contrib
+  when: pgsql_install_contrib
+    

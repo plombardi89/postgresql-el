@@ -1,0 +1,17 @@
+---
+# file: ansible-postgresql-el7
+#
+# Basic playbook to provision a PostgreSQL server. This playbook is mostly useful as an example
+# and for testing.
+#
+# author: Philip Lombardi <plombardi89@gmail.com>
+
+- hosts: all
+  sudo: yes 
+  vars_files:
+    - defaults/main.yml
+    - defaults/repositories.yml
+  tasks:
+    - include: tasks/main.yml
+  handlers:
+    - include: handlers/main.yml

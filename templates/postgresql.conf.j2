@@ -1,0 +1,433 @@
+# -----------------------------
+# PostgreSQL configuration file
+# -----------------------------
+#
+# This file consists of lines of the form:
+#
+#   name = value
+#
+# (The "=" is optional.)  Whitespace may be used.  Comments are introduced with
+# "#" anywhere on a line.  The complete list of parameter names and allowed
+# values can be found in the PostgreSQL documentation.
+#
+# The commented-out settings shown in this file represent the default values.
+# Re-commenting a setting is NOT sufficient to revert it to the default value;
+# you need to reload the server.
+#
+# This file is read on server startup and when the server receives a SIGHUP
+# signal.  If you edit the file on a running system, you have to SIGHUP the
+# server for the changes to take effect, or use "pg_ctl reload".  Some
+# parameters, which are marked below, require a server shutdown and restart to
+# take effect.
+#
+# Any parameter can also be given as a command-line option to the server, e.g.,
+# "postgres -c log_connections=on".  Some parameters can be changed at run time
+# with the "SET" SQL command.
+#
+# Memory units:  kB = kilobytes        Time units:  ms  = milliseconds
+#                MB = megabytes                     s   = seconds
+#                GB = gigabytes                     min = minutes
+#                TB = terabytes                     h   = hours
+#                                                   d   = days
+
+
+#------------------------------------------------------------------------------
+# FILE LOCATIONS
+#------------------------------------------------------------------------------
+
+# The default values of these variables are driven from the -D command-line
+# option or PGDATA environment variable, represented here as ConfigDir.
+
+data_directory = '{{ pgsql_data_directory }}'
+hba_file = '{{ pgsql_hba_file }}'
+ident_file = '{{ pgsql_ident_file }}'
+#external_pid_file = ''
+
+#------------------------------------------------------------------------------
+# CONNECTIONS AND AUTHENTICATION
+#------------------------------------------------------------------------------
+
+# - Connection Settings -
+
+listen_addresses = '{{ pgsql_listen_addresses|join(',') }}'
+port = {{ pgsql_port }}
+
+max_connections = {{ pgsql_max_connections }}
+superuser_reserved_connections = {{ pgsql_superuser_reserved_connections }}
+
+unix_socket_directories = '{{ pgsql_unix_socket_directories|join(',') }}'
+unix_socket_group = '{{ pgsql_unix_socket_group }}'
+unix_socket_permissions = {{ pgsql_unix_socket_permissions }}
+
+bonjour = {{ 'on' if pgsql_bonjour else 'off' }}
+bonjour_name = '{{ pgsql_bonjour_name }}'
+
+# - Security and Authentication -
+
+authentication_timeout = {{ pgsql_authentication_timeout }}
+
+ssl = {{ 'on' if pgsql_ssl else 'off' }}
+ssl_ciphers = '{{ pgsql_ssl_ciphers|join(':') }}'
+ssl_prefer_server_ciphers = {{ pgsql_ssl_prefer_server_ciphers }}
+ssl_ecdh_curve = '{{ pgsql_ssl_ecdh_curve }}'
+ssl_renegotiation_limit = {{ pgsql_ssl_renegotiation_limit }}
+ssl_cert_file = '{{ pgsql_ssl_cert_file }}'
+ssl_key_file = '{{ pgsql_ssl_key_file }}'
+ssl_ca_file = '{{ pgsql_ssl_ca_file }}'
+ssl_crl_file = '{{ pgsql_ssl_crl_file }}'
+
+password_encryption = {{ 'on' if pgsql_password_encryption else 'off' }}
+db_user_namespace = {{ 'on' if pgsql_db_user_namespace else 'off' }}
+
+# GSSAPI using Kerberos
+krb_server_keyfile = '{{ pgsql_krb_server_keyfile }}'
+krb_caseins_users = {{ 'on' if pgsql_db_user_namespace else 'off' }}
+
+# - TCP Keepalives -
+# see "man 7 tcp" for details
+
+tcp_keepalives_idle = {{ pgsql_tcp_keepalives_idle }}
+tcp_keepalives_interval = {{ pgsql_tcp_keepalives_interval }}
+tcp_keepalives_count = {{ pgsql_tcp_keepalives_count }}
+
+#------------------------------------------------------------------------------
+# RESOURCE USAGE (except WAL)
+#------------------------------------------------------------------------------
+
+# - Memory -
+
+shared_buffers = {{ pgsql_shared_buffers }}
+huge_pages = {{ pgsql_huge_pages }}
+temp_buffers = {{ pgsql_temp_buffers }}
+max_prepared_transactions = {{ pgsql_max_prepared_transactions }}
+work_mem = {{ pgsql_work_mem }}
+maintenance_work_mem = {{ pgsql_maintenance_work_mem }}
+autovacuum_work_mem = {{ pgsql_autovacuum_work_mem }}
+max_stack_depth = {{ pgsql_max_stack_depth }}
+dynamic_shared_memory_type = {{ pgsql_dynamic_shared_memory_type }}
+
+# - Disk -
+
+temp_file_limit = {{ pgsql_temp_file_limit }}
+
+# - Kernel Resource Usage -
+
+max_files_per_process = {{ pgsql_max_files_per_process }}
+shared_preload_libraries = '{{ pgsql_shared_preload_libraries|join(',') }}'
+
+# - Cost-Based Vacuum Delay -
+
+vacuum_cost_delay = {{ pgsql_vacuum_cost_delay }}
+vacuum_cost_page_hit = {{ pgsql_vacuum_cost_page_hit }}
+vacuum_cost_page_miss = {{ pgsql_vacuum_cost_page_miss }}
+vacuum_cost_page_dirty = {{ pgsql_vacuum_cost_page_dirty }}
+vacuum_cost_limit = {{ pgsql_vacuum_cost_limit }}
+
+# - Background Writer -
+
+bgwriter_delay = {{ pgsql_bgwriter_delay }}
+bgwriter_lru_maxpages = {{ pgsql_bgwriter_lru_maxpages }}
+bgwriter_lru_multiplier = {{ pgsql_bgwriter_lru_multiplier }}
+
+# - Asynchronous Behavior -
+
+effective_io_concurrency = {{ pgsql_effective_io_concurrency }}
+max_worker_processes = {{ pgsql_max_worker_processes }}
+
+
+#------------------------------------------------------------------------------
+# WRITE AHEAD LOG
+#------------------------------------------------------------------------------
+
+# - Settings -
+
+wal_level = {{ pgsql_wal_level }}
+fsync = {{ 'on' if pgsql_fsync else 'off' }}
+synchronous_commit = {{ pgsql_synchronous_commit }}
+wal_sync_method = {{ pgsql_wal_sync_method }}
+full_page_writes = {{ 'on' if pgsql_full_page_writes else 'off' }}
+wal_log_hints = {{ pgsql_wal_log_hints }}
+wal_buffers = {{ pgsql_wal_buffers }}
+wal_writer_delay = {{ pgsql_wal_writer_delay }}
+
+commit_delay = {{ pgsql_commit_delay }}
+commit_siblings  = {{ pgsql_commit_siblings }}
+
+# - Checkpoints -
+
+checkpoint_segments = {{ pgsql_checkpoint_segments }}
+checkpoint_timeout = {{ pgsql_checkpoint_timeout }}
+checkpoint_completion_target = {{ pgsql_checkpoint_completion_target }}
+checkpoint_warning = {{ pgsql_checkpoint_warning }}
+
+# - Archiving -
+
+archive_mode = {{ 'on' if pgsql_archive_mode else 'off' }}
+archive_command = '{{ pgsql_archive_command }}'
+archive_timeout = {{ pgsql_archive_timeout }}
+
+
+#------------------------------------------------------------------------------
+# REPLICATION
+#------------------------------------------------------------------------------
+
+# - Sending Server(s) -
+
+max_wal_senders = {{ pgsql_max_wal_senders }}
+wal_keep_segments = {{ pgsql_wal_keep_segments }}
+wal_sender_timeout = {{ pgsql_wal_sender_timeout }}
+max_replication_slots = {{ pgsql_max_replication_slots }}
+
+# - Master Server -
+
+synchronous_standby_names = '{{ pgsql_synchronous_standby_names|join(',') }}'
+vacuum_defer_cleanup_age = {{ pgsql_vacuum_defer_cleanup_age }}
+
+# - Standby Servers -
+
+hot_standby = {{ 'on' if pgsql_hot_standby else 'off' }}
+max_standby_archive_delay = {{ pgsql_max_standby_archive_delay }}
+max_standby_streaming_delay = {{ pgsql_max_standby_streaming_delay }}
+wal_receiver_status_interval = {{ pgsql_wal_receiver_status_interval }}
+hot_standby_feedback = {{ 'on' if pgsql_hot_standby_feedback or 'off' }}
+wal_receiver_timeout = {{ pgsql_wal_receiver_timeout }}
+
+
+#------------------------------------------------------------------------------
+# QUERY TUNING
+#------------------------------------------------------------------------------
+
+# - Planner Method Configuration -
+
+enable_bitmapscan = {{ 'on' if pgsql_enable_bitmapscan else 'off' }}
+enable_hashagg = {{ 'on' if pgsql_enable_hashagg else 'off' }}
+enable_hashjoin = {{ 'on' if pgsql_enable_hashjoin else 'off' }}
+enable_indexscan = {{ 'on' if pgsql_enable_indexscan else 'off' }}
+enable_indexonlyscan = {{ 'on' if pgsql_enable_indexonlyscan else 'off' }}
+enable_material = {{ 'on' if pgsql_enable_material else 'off' }}
+enable_mergejoin = {{ 'on' if pgsql_enable_mergejoin else 'off' }}
+enable_nestloop = {{ 'on' if pgsql_enable_nestloop else 'off' }}
+enable_seqscan = {{ 'on' if pgsql_enable_seqscan else 'off' }}
+enable_sort = {{ 'on' if pgsql_enable_sort else 'off' }}
+enable_tidscan = {{ 'on' if pgsql_enable_tidscan else 'off' }}
+
+# - Planner Cost Constants -
+
+seq_page_cost = {{ pgsql_seq_page_cost }}
+random_page_cost = {{ pgsql_random_page_cost }}
+cpu_tuple_cost = {{ pgsql_cpu_tuple_cost }}
+cpu_index_tuple_cost = {{ pgsql_cpu_index_tuple_cost }}
+cpu_operator_cost = {{ pgsql_cpu_operator_cost }}
+effective_cache_size = {{ pgsql_effective_cache_size }}
+
+# - Genetic Query Optimizer -
+
+geqo = {{ 'on' if pgsql_enable_tidscan else 'off' }}
+geqo_threshold = {{ pgsql_geqo_threshold }}
+geqo_effort = {{ pgsql_geqo_effort }}
+geqo_pool_size = {{ pgsql_geqo_pool_size }}
+geqo_generations = {{ pgsql_geqo_generations }}
+geqo_selection_bias = {{ pgsql_geqo_selection_bias }}
+geqo_seed = {{ pgsql_geqo_seed }}
+
+# - Other Planner Options -
+
+default_statistics_target = {{ pgsql_default_statistics_target }}
+constraint_exclusion = {{ pgsql_constraint_exclusion }}
+cursor_tuple_fraction = {{ pgsql_cursor_tuple_fraction }}
+from_collapse_limit = {{ pgsql_from_collapse_limit }}
+join_collapse_limit = {{ pgsql_join_collapse_limit }}
+
+
+#------------------------------------------------------------------------------
+# ERROR REPORTING AND LOGGING
+#------------------------------------------------------------------------------
+
+# - Where to Log -
+
+log_destination = '{{ pgsql_log_destination }}'
+
+logging_collector = {{ 'on' if pgsql_logging_collector else 'off' }}
+
+log_directory = '{{ pgsql_log_directory }}'
+log_filename = '{{ pgsql_log_filename }}'
+log_file_mode = {{ pgsql_log_file_mode }}
+log_truncate_on_rotation = {{ 'on' if pgsql_log_truncate_on_rotation else 'off' }}
+log_rotation_age = {{ pgsql_log_rotation_age }}
+log_rotation_size = {{ pgsql_log_rotation_size }}
+
+syslog_facility = '{{ pgsql_syslog_facility }}'
+syslog_ident = '{{ pgsql_syslog_ident }}'
+
+event_source = '{{ pgsql_event_source }}'
+
+# - When to Log -
+
+client_min_messages = {{ pgsql_client_min_messages }}
+
+log_min_messages = {{ pgsql_log_min_messages }}
+log_min_error_statement = {{ pgsql_log_min_error_statement }}
+log_min_duration_statement = {{ pgsql_log_min_duration_statement }}
+
+
+# - What to Log -
+
+debug_print_parse = {{ 'on' if pgsql_debug_print_parse else 'off' }}
+debug_print_rewritten = {{ 'on' if pgsql_debug_print_rewritten else 'off' }}
+debug_print_plan = {{ 'on' if pgsql_debug_print_plan else 'off' }}
+debug_pretty_print = {{ 'on' if pgsql_debug_pretty_print else 'off' }}
+log_checkpoints = {{ 'on' if pgsql_log_checkpoints else 'off' }}
+log_connections = {{ 'on' if pgsql_log_connections else 'off' }}
+log_disconnections = {{ 'on' if pgsql_log_disconnections else 'off' }}
+log_duration = {{ 'on' if pgsql_log_duration else 'off' }}
+log_error_verbosity = {{ pgsql_log_error_verbosity }}
+log_hostname = {{ 'on' if pgsql_log_duration else 'off' }}
+log_line_prefix = '{{ pgsql_log_line_prefix }}'
+log_lock_waits = {{ 'on' if pgsql_log_lock_waits else 'off' }}
+log_statement = '{{ pgsql_log_statement }}'
+log_temp_files = {{ pgsql_log_temp_files }}
+log_timezone = '{{ pgsql_log_timezone }}'
+
+
+#------------------------------------------------------------------------------
+# RUNTIME STATISTICS
+#------------------------------------------------------------------------------
+
+# - Query/Index Statistics Collector -
+
+track_activities = {{ 'on' if pgsql_track_activities else 'off' }}
+track_counts = {{ 'on' if pgsql_track_counts else 'off' }}
+track_io_timing = {{ 'on' if pgsql_track_io_timing else 'off' }}
+track_functions = {{ pgsql_track_functions }}
+track_activity_query_size = {{ pgsql_track_activity_query_size }}
+update_process_title = {{ 'on' if pgsql_update_process_title else 'off' }}
+stats_temp_directory = '{{ pgsql_stats_temp_directory }}'
+
+
+# - Statistics Monitoring -
+
+log_parser_stats = {{ 'on' if pgsql_log_parser_stats else 'off' }}
+log_planner_stats = {{ 'on' if pgsql_log_planner_stats else 'off' }}
+log_executor_stats = {{ 'on' if pgsql_log_executor_stats else 'off' }}
+log_statement_stats = {{ 'on' if pgsql_log_statement_stats else 'off' }}
+
+
+#------------------------------------------------------------------------------
+# AUTOVACUUM PARAMETERS
+#------------------------------------------------------------------------------
+
+autovacuum = {{ 'on' if pgsql_autovacuum else 'off' }}
+log_autovacuum_min_duration = {{ pgsql_log_autovacuum_min_duration }}
+autovacuum_max_workers = {{ pgsql_autovacuum_max_workers }}
+autovacuum_naptime = {{ pgsql_autovacuum_naptime }}
+autovacuum_vacuum_threshold = {{ pgsql_autovacuum_vacuum_threshold }}
+autovacuum_analyze_threshold = {{ pgsql_autovacuum_analyze_threshold }}
+autovacuum_vacuum_scale_factor = {{ pgsql_autovacuum_vacuum_scale_factor }}
+autovacuum_analyze_scale_factor = {{ pgsql_autovacuum_analyze_scale_factor }}
+autovacuum_freeze_max_age = {{ pgsql_autovacuum_freeze_max_age }}
+autovacuum_multixact_freeze_max_age = {{ pgsql_autovacuum_multixact_freeze_max_age }}
+autovacuum_vacuum_cost_delay = {{ pgsql_autovacuum_vacuum_cost_delay }}
+autovacuum_vacuum_cost_limit = {{ pgsql_autovacuum_vacuum_cost_limit }}
+
+
+#------------------------------------------------------------------------------
+# CLIENT CONNECTION DEFAULTS
+#------------------------------------------------------------------------------
+
+# - Statement Behavior -
+
+search_path = '{{ pgsql_search_path|join(',') }}'
+default_tablespace = '{{ pgsql_default_tablespace }}'
+temp_tablespaces = '{{ pgsql_temp_tablespaces|join(',') }}'
+check_function_bodies = {{ 'on' if pgsql_check_function_bodies else 'off' }}
+default_transaction_isolation = '{{ pgsql_default_transaction_isolation }}'
+default_transaction_read_only = {{ 'on' if pgsql_default_transaction_read_only else 'off' }}
+default_transaction_deferrable = {{ 'on' if pgsql_default_transaction_deferrable else 'off' }}
+session_replication_role = '{{ pgsql_session_replication_role }}'
+statement_timeout = {{ pgsql_statement_timeout }}
+lock_timeout = {{ pgsql_lock_timeout }}
+vacuum_freeze_min_age = {{ pgsql_vacuum_freeze_min_age }}
+vacuum_freeze_table_age = {{ pgsql_vacuum_freeze_table_age }}
+vacuum_multixact_freeze_min_age = {{ pgsql_vacuum_multixact_freeze_min_age }}
+vacuum_multixact_freeze_table_age = {{ pgsql_vacuum_multixact_freeze_table_age }}
+bytea_output = '{{ pgsql_bytea_output }}'
+xmlbinary = '{{ pgsql_xmlbinary }}'
+xmloption = '{{ pgsql_xmloption }}'
+
+# - Locale and Formatting -
+
+datestyle = '{{ pgsql_datestyle|join(',') }}'
+intervalstyle = '{{ pgsql_intervalstyle }}'
+timezone = '{{ pgsql_timezone }}'
+timezone_abbreviations = '{{ pgsql_timezone_abbreviations }}'
+extra_float_digits = {{ pgsql_extra_float_digits }}
+client_encoding = {{ pgsql_client_encoding }}
+
+lc_messages = '{{ pgsql_lc_messages }}'
+lc_monetary = '{{ pgsql_lc_monetary }}'
+lc_numeric = '{{ pgsql_lc_numeric }}'
+lc_time = '{{ pgsql_lc_time }}'
+
+# default configuration for text search
+default_text_search_config = '{{ pgsql_default_text_search_config }}'
+
+# - Other Defaults -
+
+dynamic_library_path = '{{ pgsql_dynamic_library_path }}'
+local_preload_libraries = '{{ pgsql_local_preload_libraries|join(',') }}'
+session_preload_libraries = '{{ pgsql_session_preload_libraries|join(',') }}'
+
+
+#------------------------------------------------------------------------------
+# LOCK MANAGEMENT
+#------------------------------------------------------------------------------
+
+deadlock_timeout = {{ pgsql_deadlock_timeout }}
+max_locks_per_transaction = {{ pgsql_max_locks_per_transaction }}
+max_pred_locks_per_transaction = {{ pgsql_max_pred_locks_per_transaction }}
+
+
+#------------------------------------------------------------------------------
+# VERSION/PLATFORM COMPATIBILITY
+#------------------------------------------------------------------------------
+
+# - Previous PostgreSQL Versions -
+
+array_nulls = {{ 'on' if pgsql_array_nulls else 'off' }}
+backslash_quote = {{ pgsql_backslash_quote }}
+default_with_oids = {{ 'on' if pgsql_default_with_oids else 'off' }}
+escape_string_warning = {{ 'on' if pgsql_escape_string_warning else 'off' }}
+lo_compat_privileges = {{ 'on' if pgsql_lo_compat_privileges else 'off' }}
+quote_all_identifiers = {{ 'on' if pgsql_quote_all_identifiers else 'off' }}
+sql_inheritance = {{ 'on' if pgsql_sql_inheritance else 'off' }}
+standard_conforming_strings = {{ 'on' if pgsql_standard_conforming_strings else 'off' }}
+synchronize_seqscans = {{ 'on' if pgsql_synchronize_seqscans else 'off' }}
+
+# - Other Platforms and Clients -
+
+transform_null_equals = {{ 'on' if pgsql_transform_null_equals else 'off' }}
+
+
+#------------------------------------------------------------------------------
+# ERROR HANDLING
+#------------------------------------------------------------------------------
+
+exit_on_error = {{ 'on' if pgsql_exit_on_error else 'off' }}
+restart_after_crash = {{ 'on' if pgsql_restart_after_crash else 'off' }}
+
+
+#------------------------------------------------------------------------------
+# CONFIG FILE INCLUDES
+#------------------------------------------------------------------------------
+
+# These options allow settings to be loaded from files other than the
+# default postgresql.conf.
+
+include_dir = 'conf.d'
+#include_if_exists = 'exists.conf'
+#include = 'special.conf'
+
+
+#------------------------------------------------------------------------------
+# CUSTOM OPTIONS
+#------------------------------------------------------------------------------

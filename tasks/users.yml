@@ -1,0 +1,12 @@
+---
+# file: ansible-postgresql-el/tasks/users.yml
+
+- name: Ensure database users are created
+  postgresql_user:
+    encrypted: no
+    name: "{{ item.username }}"
+    password: "{{ item.password }}"
+    state: present
+    role_attr_flags: "{{ item.flags|join(',') }}"
+  with_items: pgsql_users
+  when: pgsql_users|length > 0

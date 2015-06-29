@@ -1,0 +1,19 @@
+---
+# file: ansible-postgresql-el/tasks/main.yml
+
+- name: Ensure operating system is supported
+  debug:
+    msg: The target host is not running a supported OS (family={{ ansible_os_family }}, arch={{ansible_architecture }})
+    fail: yes
+  when: not ansible_os_family == "RedHat" or not ansible_architecture == "x86_64"
+  
+- name: Ensure operating system package manager is supported
+  debug:
+    msg: The target host package manager is not supported (name={{ ansible_pkg_mgr }})
+    fail: yes
+  when: not ansible_pkg_mgr == "yum"
+
+- include: install.yml
+- include: configure.yml
+- include: users.yml
+- include: databases.yml

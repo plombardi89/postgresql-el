@@ -1,0 +1,24 @@
+---
+# file: ansible-postgresql-el/tasks/databases.yml
+
+- name: Ensure databases are created
+  postgresql_db:
+    encoding: "{{ item.encoding }}"
+    lc_collate: "{{ item.collate }}"
+    lc_ctype: "{{ item.ctype }}"
+    name: "{{ item.name }}"
+    owner: "{{ item.owner }}"
+    state: present
+    template: "{{ item.template }}"
+  with_items: pgsql_databases
+  when: pgsql_databases|length > 0
+  
+- name: Ensure database extensions are enabled
+  sudo: yes
+  sudo_user: "{{ pgsql_admin_user }}"
+  command: "psql {{ item[0].name }} -c 'CREATE EXTENSION IF NOT EXISTS {{ item[1] }}'"
+  with_nested:
+    - pgsql_databases
+    - pgsql_extensions
+  when: pgsql_install_contrib and pgsql_extensions|length > 0
+    

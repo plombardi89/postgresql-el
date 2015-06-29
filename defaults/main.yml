@@ -1,0 +1,473 @@
+---
+# file: ansible-postgresql-el/defaults/main.yml
+#
+# author: Philip Lombardi <plombardi89@gmail.com>
+
+# --------------------------------------------------------------------------------------------------
+# Basic Settings
+# --------------------------------------------------------------------------------------------------
+
+pgsql_version: 9.4
+pgsql_encoding: UTF-8
+pgsql_locale: en_US.UTF-8
+
+pgsql_install_contrib: yes
+
+pgsql_admin_user: postgres
+
+pgsql_service_user: "{{ pgsql_admin_user }}"
+pgsql_service_group: "{{ pgsql_service_user }}"
+
+pgsql_initdb_path: /usr/pgsql-{{ pgsql_version }}/bin/postgresql{{ pgsql_version|replace(".", "") }}-setup
+
+# --------------------------------------------------------------------------------------------------
+# PostgreSQL Host Based Authentication (pg_hba.conf)
+# --------------------------------------------------------------------------------------------------
+
+# Authentication mechanism settings used in the pg_hba.conf file
+pgsql_default_unix_auth_method: trust
+pgsql_default_ipv4_auth_method: md5
+pgsql_default_ipv6_auth_method: md5
+
+# Default authentication rules to install in pg_hba.conf
+pgsql_pg_hba_default:
+ - type: local
+   database: all
+   role: "{{ pgsql_admin_user }}"
+   address: ""
+   method: "{{ pgsql_default_unix_auth_method }}"
+   comment: '"local" is for Unix domain socket connections only'
+ - type: host 
+   database: all
+   role: all
+   address: "127.0.0.1/32"
+   method: "{{ pgsql_default_ipv4_auth_method }}"
+   comment: 'IPv4 local connections:'
+ - type: host
+   database: all
+   role: all
+   address: "::1/128"
+   method: "{{ pgsql_default_ipv6_auth_method }}"
+   comment: 'IPv6 local connections:'
+
+# Custom authentication rules to install in pg_hba.conf
+pgsql_pg_hba_custom:
+ - type: host
+   database: replication
+   role: "{{ pgsql_admin_user }}"
+   address: "127.0.0.1/32"
+   method: "{{ pgsql_default_ipv4_auth_method }}"
+   comment: ''
+
+# --------------------------------------------------------------------------------------------------
+#PostgresSQL Configuration (postgresql.conf)
+# --------------------------------------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------------------------------------
+# File Locations
+# --------------------------------------------------------------------------------------------------
+
+# Setting this to ConfigDir means PostgreSQL references the PGDATA environment variable.
+pgsql_data_directory: "/var/lib/pgsql/{{ pgsql_version}}/data"
+pgsql_log_directory: /var/log/postgresql
+pgsql_conf_file: "{{ pgsql_data_directory }}/postgresql.conf"
+pgsql_hba_file: "{{ pgsql_data_directory }}/pg_hba.conf"
+pgsql_ident_file: "{{ pgsql_data_directory }}/pg_ident.conf"
+
+# --------------------------------------------------------------------------------------------------
+# Connection Settings
+# --------------------------------------------------------------------------------------------------
+
+# - Connection Settings -
+
+pgsql_listen_addresses:
+  - 127.0.0.1
+
+pgsql_port: 5432
+
+pgsql_max_connections: 100
+pgsql_superuser_reserved_connections: 3
+
+pgsql_unix_socket_directories:
+  - /var/run/postgresql
+pgsql_unix_socket_group: ""
+pgsql_unix_socket_permissions: "0777"
+
+pgsql_pg_ctl_options: []
+
+pgsql_bonjour: off
+pgsql_bonjour_name: ""
+
+# - Security and Authentication -
+
+pgsql_authentication_timeout: 60s
+pgsql_ssl: off
+pgsql_ssl_ciphers:
+  - "DEFAULT"
+  - "!LOW"
+  - "!EXP"
+  - "!MD5"
+  - "@STRENGTH"
+pgsql_ssl_prefer_server_ciphers: on
+pgsql_ssl_ecdh_curve: prime256v1
+pgsql_ssl_renegotiation_limit: 512MB
+pgsql_ssl_cert_file: ""
+pgsql_ssl_key_file: ""
+pgsql_ssl_ca_file: ""
+pgsql_ssl_crl_file: ""
+pgsql_password_encryption: on
+pgsql_db_user_namespace: off
+
+# Kerberos and GSSAPI
+pgsql_krb_server_keyfile: ''
+pgsql_krb_srvname: postgres
+pgsql_krb_caseins_users: off
+
+# TCP Keepalives, 0 selects the system default (in seconds)
+pgsql_tcp_keepalives_idle: 0
+pgsql_tcp_keepalives_interval: 0
+pgsql_tcp_keepalives_count: 0
+
+#------------------------------------------------------------------------------
+# RESOURCE USAGE (except WAL)
+#------------------------------------------------------------------------------
+
+# - Memory -
+
+pgsql_shared_buffers: 128MB
+pgsql_huge_pages: try
+pgsql_temp_buffers: 8MB
+pgsql_max_prepared_transactions: 0
+pgsql_work_mem: 1MB
+pgsql_maintenance_work_mem: 16MB
+pgsql_autovacuum_work_mem: -1
+pgsql_max_stack_depth: 2MB
+pgsql_dynamic_shared_memory_type: posix
+
+
+# - Disk -
+
+pgsql_temp_file_limit: -1
+
+
+# - Kernel Resource Usage -
+
+pgsql_max_files_per_process: 1000
+pgsql_shared_preload_libraries: []
+
+
+# - Cost-Based Vacuum Delay -
+
+pgsql_vacuum_cost_delay:      0
+pgsql_vacuum_cost_page_hit:   1
+pgsql_vacuum_cost_page_miss:  10
+pgsql_vacuum_cost_page_dirty: 20
+pgsql_vacuum_cost_limit:      200
+
+
+# - Background Writer -
+
+pgsql_bgwriter_delay:          200ms
+pgsql_bgwriter_lru_maxpages:   100
+pgsql_bgwriter_lru_multiplier: 2.0
+
+
+# - Asynchronous Behavior -
+
+pgsql_effective_io_concurrency: 1
+pgsql_max_worker_processes: 8
+
+#------------------------------------------------------------------------------
+# WRITE AHEAD LOG
+#------------------------------------------------------------------------------
+
+# - Settings -
+
+pgsql_wal_level: minimal
+pgsql_fsync: on
+pgsql_synchronous_commit: on
+pgsql_wal_sync_method: fsync
+pgsql_full_page_writes: on
+pgsql_wal_log_hints: off
+pgsql_wal_buffers: -1
+pgsql_wal_writer_delay: 200ms
+pgsql_commit_delay: 0
+pgsql_commit_siblings: 5
+
+
+# - Checkpoints -
+
+pgsql_checkpoint_segments: 3
+pgsql_checkpoint_timeout: 5min
+pgsql_checkpoint_completion_target: 0.5
+pgsql_checkpoint_warning: 30s
+
+
+# - Archiving -
+
+pgsql_archive_mode: off
+pgsql_archive_command: ""
+pgsql_archive_timeout: 0
+
+
+#------------------------------------------------------------------------------
+# REPLICATION
+#------------------------------------------------------------------------------
+
+# - Sending Server(s) -
+
+pgsql_max_wal_senders: 0
+pgsql_wal_keep_segments: 0 
+pgsql_wal_sender_timeout: 60s
+pgsql_max_replication_slots: 0
+
+
+# - Master Server -
+
+pgsql_synchronous_standby_names: []
+
+pgsql_vacuum_defer_cleanup_age: 0
+
+
+# - Standby Servers -
+
+pgsql_hot_standby: off
+pgsql_max_standby_archive_delay: 30s
+pgsql_max_standby_streaming_delay: 30s
+pgsql_wal_receiver_status_interval: 10s
+pgsql_hot_standby_feedback: off
+pgsql_wal_receiver_timeout: 60s
+
+
+#------------------------------------------------------------------------------
+# QUERY TUNING
+#------------------------------------------------------------------------------
+
+# - Planner Method Configuration -
+
+pgsql_enable_bitmapscan: on
+pgsql_enable_hashagg: on
+pgsql_enable_hashjoin: on
+pgsql_enable_indexscan: on
+pgsql_enable_indexonlyscan: on
+pgsql_enable_material: on
+pgsql_enable_mergejoin: on
+pgsql_enable_nestloop: on
+pgsql_enable_seqscan: on
+pgsql_enable_sort: on
+pgsql_enable_tidscan: on
+
+
+# - Planner Cost Constants -
+
+pgsql_seq_page_cost: 1.0
+pgsql_random_page_cost: 4.0
+pgsql_cpu_tuple_cost: 0.01
+pgsql_cpu_index_tuple_cost: 0.005
+pgsql_cpu_operator_cost: 0.0025
+pgsql_effective_cache_size: 128MB
+
+
+# - Genetic Query Optimizer -
+
+pgsql_geqo: on
+pgsql_geqo_threshold: 12
+pgsql_geqo_effort: 5
+pgsql_geqo_pool_size: 0
+pgsql_geqo_generations: 0
+pgsql_geqo_selection_bias: 2.0
+pgsql_geqo_seed: 0.0
+
+
+# - Other Planner Options -
+
+pgsql_default_statistics_target: 100
+pgsql_constraint_exclusion: partition
+pgsql_cursor_tuple_fraction: 0.1
+pgsql_from_collapse_limit: 8
+pgsql_join_collapse_limit: 8      
+
+
+#------------------------------------------------------------------------------
+# ERROR REPORTING AND LOGGING
+#------------------------------------------------------------------------------
+
+# - Where to Log -
+
+pgsql_log_destination: stderr
+pgsql_logging_collector: off
+pgsql_log_filename: pgsql-%Y-%m-%d_%H%M%S.log
+pgsql_log_file_mode: "0600"
+pgsql_log_truncate_on_rotation: off
+pgsql_log_rotation_age: 1d
+pgsql_log_rotation_size: 10MB
+
+pgsql_syslog_facility: LOCAL0
+pgsql_syslog_ident: postgres
+pgsql_event_source: PostgreSQL
+
+pgsql_client_min_messages: notice
+pgsql_log_min_messages: warning
+pgsql_log_min_error_statement: error
+pgsql_log_min_duration_statement: -1
+
+
+# - What to Log -
+
+pgsql_debug_print_parse: off
+pgsql_debug_print_rewritten: off
+pgsql_debug_print_plan: off
+pgsql_debug_pretty_print: on
+pgsql_log_checkpoints: off
+pgsql_log_connections: off
+pgsql_log_disconnections: off
+pgsql_log_duration: off
+pgsql_log_error_verbosity: default
+pgsql_log_hostname: off
+pgsql_log_line_prefix: '%t '
+pgsql_log_lock_waits: off
+pgsql_log_statement:  none
+pgsql_log_temp_files: -1
+pgsql_log_timezone:   UTC
+
+
+#------------------------------------------------------------------------------
+# RUNTIME STATISTICS
+#------------------------------------------------------------------------------
+
+# - Query/Index Statistics Collector -
+
+pgsql_track_activities: on
+pgsql_track_counts: on
+pgsql_track_io_timing: off
+pgsql_track_functions: none
+pgsql_track_activity_query_size: 1024
+pgsql_update_process_title: on
+pgsql_stats_temp_directory: pg_stat_tmp
+
+
+# - Statistics Monitoring -
+
+pgsql_log_parser_stats:    off
+pgsql_log_planner_stats:   off
+pgsql_log_executor_stats:  off
+pgsql_log_statement_stats: off
+
+
+#------------------------------------------------------------------------------
+# AUTOVACUUM PARAMETERS
+#------------------------------------------------------------------------------
+
+pgsql_autovacuum: on
+pgsql_log_autovacuum_min_duration: -1
+pgsql_autovacuum_max_workers: 3
+pgsql_autovacuum_naptime: 1min
+pgsql_autovacuum_vacuum_threshold: 50
+pgsql_autovacuum_analyze_threshold: 50
+pgsql_autovacuum_vacuum_scale_factor: 0.2
+pgsql_autovacuum_analyze_scale_factor: 0.1
+pgsql_autovacuum_freeze_max_age: 200000000
+pgsql_autovacuum_multixact_freeze_max_age: 400000000
+pgsql_autovacuum_vacuum_cost_delay: 20ms
+pgsql_autovacuum_vacuum_cost_limit: -1
+
+
+#------------------------------------------------------------------------------
+# CLIENT CONNECTION DEFAULTS
+#------------------------------------------------------------------------------
+
+# - Statement Behavior -
+
+pgsql_search_path:
+  - '"$user"'
+  - public
+pgsql_default_tablespace: ""
+pgsql_temp_tablespaces: []
+pgsql_check_function_bodies: on
+pgsql_default_transaction_isolation: read committed
+pgsql_default_transaction_read_only: off
+pgsql_default_transaction_deferrable: off
+pgsql_session_replication_role: origin
+pgsql_statement_timeout: 0
+pgsql_lock_timeout: 0
+pgsql_vacuum_freeze_min_age: 50000000
+pgsql_vacuum_freeze_table_age: 150000000
+pgsql_vacuum_multixact_freeze_min_age: 5000000
+pgsql_vacuum_multixact_freeze_table_age: 150000000
+pgsql_bytea_output: hex
+pgsql_xmlbinary: base64
+pgsql_xmloption: content
+
+
+# - Locale and Formatting -
+
+pgsql_datestyle:
+  - iso
+  - mdy
+pgsql_intervalstyle: postgres
+pgsql_timezone: UTC
+
+pgsql_timezone_abbreviations: Default
+
+pgsql_extra_float_digits: 0
+pgsql_client_encoding: sql_ascii
+
+pgsql_lc_messages: en_US.UTF-8
+pgsql_lc_monetary: en_US.UTF-8
+pgsql_lc_numeric: en_US.UTF-8
+pgsql_lc_time: en_US.UTF-8
+
+pgsql_default_text_search_config: pg_catalog.english
+
+pgsql_dynamic_library_path: "$libdir"
+pgsql_local_preload_libraries: []
+pgsql_session_preload_libraries: []
+
+
+#------------------------------------------------------------------------------
+# LOCK MANAGEMENT
+#------------------------------------------------------------------------------
+
+pgsql_deadlock_timeout: 1s
+pgsql_max_locks_per_transaction: 64
+pgsql_max_pred_locks_per_transaction: 64
+
+
+#------------------------------------------------------------------------------
+# VERSION/PLATFORM COMPATIBILITY
+#------------------------------------------------------------------------------
+
+# - Previous PostgreSQL Versions -
+
+pgsql_array_nulls: on
+pgsql_backslash_quote: safe_encoding # on, off, or safe_encoding
+pgsql_default_with_oids: off
+pgsql_escape_string_warning: on
+pgsql_lo_compat_privileges: off
+pgsql_quote_all_identifiers: off
+pgsql_sql_inheritance: on
+pgsql_standard_conforming_strings: on
+pgsql_synchronize_seqscans: on
+
+
+# - Other Platforms and Clients -
+
+pgsql_transform_null_equals: off
+
+
+#------------------------------------------------------------------------------
+# ERROR HANDLING
+#------------------------------------------------------------------------------
+
+pgsql_exit_on_error: off
+pgsql_restart_after_crash: on
+
+
+# --------------------------------------------------------------------------------------------------
+# Users and Databases
+# --------------------------------------------------------------------------------------------------
+
+pgsql_databases: []
+pgsql_users: []
+pgsql_extensions: []
